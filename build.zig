@@ -66,6 +66,16 @@ pub fn build(b: *std.Build) void {
         "qcursor",
         "qpoint",
         "qrect",
+        "qpainterpath",
+        "qgraphicsitem",
+        "qgraphicsscene",
+        "qgraphicssceneevent",
+        "qgraphicsview",
+        "qguiapplication",
+        "qimage",
+        "qmainwindow",
+        "qpixmap",
+        "qstatusbar",
     }) |library| {
         exe.root_module.linkLibrary(libqt6zig.artifact(library));
     }

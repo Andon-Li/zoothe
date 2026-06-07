@@ -8,12 +8,18 @@ const QStylePainter = qt.QStylePainter;
 const QColor = qt.QColor;
 const QMouseEvent = qt.QMouseEvent;
 const QCursor = qt.QCursor;
+const QPainterPath = qt.QPainterPath;
+const QPointF = qt.QPointF;
 
 pub const Waveform = struct {
     widget: QWidget = undefined,
 
-    var point_counter: u8 = 0;
-    const points: [10]Point = [_]Point{ Point{.x = 0.5, .y = 0.5} } ++ [_]Point{undefined} ** 9;
+    var points_counter: u8 = 3;
+    var points: [10]Point = [_]Point{ 
+        Point{.x = 0.0, .y = 0.4}, 
+        Point{.x = 0.8, .y = 0.5},
+        Point{.x = 1.0, .y = 0.8},
+        } ++ [_]Point{undefined} ** 7;
 
     const dba = struct {
         min: i8 = -5,
@@ -27,8 +33,8 @@ pub const Waveform = struct {
 
     // 0 <= x,y <= 1
     const Point = struct {
-        x: f16,
-        y: f16,
+        x: f64,
+        y: f64,
     };
 
     pub fn init(alloc: std.mem.Allocator) *Waveform {
@@ -53,27 +59,73 @@ pub const Waveform = struct {
         const painter = QStylePainter.New(widget);
         defer painter.Delete();
 
-        std.debug.print(".", .{});
-
         painter.FillRect6(
             widget.Rect(),
             qt.QColor.FromRgb2(50,50,50),
         );
         
-        for (0..point_counter) |i| {
-            _ = i;
-            //create cubic
-        }   
-        //draw path
+        const path = QPainterPath.New2(QPointF.New5(
+            points[0].x,
+            points[0].y * @as(f64 ,@floatFromInt(widget.Height()))
+        ));
+
+        for (1..points_counter) |i| {
+            path.CubicTo2(
+                (points[i-1].x + (points[i].x - points[i-1].x)/2) * @as(f64 ,@floatFromInt(widget.Width())), 
+                points[i-1].y * @as(f64 ,@floatFromInt(widget.Height())), 
+                ((points[i-1].x + (points[i].x - points[i-1].x)/2) * @as(f64 ,@floatFromInt(widget.Width()))), 
+                points[i].y * @as(f64 ,@floatFromInt(widget.Height())), 
+                points[i].x * @as(f64 ,@floatFromInt(widget.Width())), 
+                points[i].y * @as(f64 ,@floatFromInt(widget.Height()))
+            );
+        }
+        
+        painter.DrawPath(path);
+
+        for (points) |point| {
+            painter.DrawEllipse3(
+                @trunc(point.x * widget.Width() - 10), 
+                @trunc(point.y * widget.Height() - 10), 
+                20, 
+                20
+                );
+        }
     }
     
 
     // Single left mouse button press
     fn onMousePressEvent(widget: QWidget, _: QMouseEvent) callconv(.c) void {
-        const cursorPos = widget.MapFromGlobal2(QCursor.Pos()); 
-        print("Press\n", .{});
-        print("X: {d}, Y: {d}\n", .{cursorPos.X(), cursorPos.Y()});
-        print("X: {d}, Y: {d}\n", .{widget.Rect().Width(), widget.Rect().Height()});
+
+        if (points_counter >= points.len) {
+            return;
+        }
+
+        const cursorPos = widget.MapFromGlobal2(QCursor.Pos());
+
+        const new_point: Point = .{
+            .x = cursorPos.X() / @as(f64, @floatFromInt(widget.Width())),
+            .y = cursorPos.Y() / @as(f64, @floatFromInt(widget.Height())),
+        };
+        print("{d:.3}\n", .{new_point.x});
+
+        for (0..points_counter-1) |i| {
+            if (points[i].x > new_point.x) {
+
+                var j: u8 = points_counter;
+                while (j > i) : (j -= 1) {
+                    points[j] = points[j-1];
+                } else {
+                    points[i] = new_point;
+                    points_counter += 1;
+                }
+                break;
+            }
+        } else {
+            points[points_counter] = new_point;
+            points_counter += 1;
+        }
+
+        widget.Update();
     }
 
     fn onMouseDoubleClickEvent(widget: QWidget, _: QMouseEvent) callconv(.c) void {
@@ -91,24 +143,14 @@ pub const Waveform = struct {
         print("Release\n", .{});
     }
 
-    fn addPoint(self: *Waveform, x: u16, y: u16) !void {
-        if (self.counter == self.points.len) {
-            return error.AAAAAAAAAAAAAAAAAAAAAHHHH_HELP_ME;
-        }
-        self.points[self.point_counter] = Point{
-            .x = x,
-            .y = y,
-        };
-        for (0..self.point_counter) |i| {
-            // if (self.points[i].x > )
-            _ = i;
-            return;
-        }
-    }
+    fn closestPointDist() .{ , u16} {
+        const cursorPos = widget.MapFromGlobal2(QCursor.Pos());
 
-    fn removePoint(self: *Waveform) void {
-        if (self.point_counter == 1) {
-            return;
-        }
+        for 
+
+        const new_point: Point = .{
+            .x = cursorPos.X() / @as(f64, @floatFromInt(widget.Width())),
+            .y = cursorPos.Y() / @as(f64, @floatFromInt(widget.Height())),
+        };
     }
 };

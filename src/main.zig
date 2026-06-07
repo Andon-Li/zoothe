@@ -35,6 +35,7 @@ pub fn main(init: std.process.Init) !void {
     defer waveform.deinit(gpa);
 
     main_layout.AddWidget(waveform.widget);
+    waveform.widget.Resize(300,300);
 
     const volume_slider = QSlider.New2();
     main_layout.AddWidget(volume_slider);
