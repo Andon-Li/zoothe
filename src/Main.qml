@@ -18,7 +18,9 @@ Window {
 
         columns: 2
         rows: 2
+
         Item {
+            id: xlabel_item
             Layout.minimumWidth: 40
             Layout.fillHeight: true
 
@@ -48,6 +50,7 @@ Window {
         }
 
         Item {
+            id: graph_item
             Layout.fillWidth: true
             Layout.fillHeight: true
             Rectangle{
@@ -58,20 +61,20 @@ Window {
                 id: shape
                 ShapePath {
                     id: path
-                    startX: 20
-                    startY: 20
+                    startX: slider_1.x
+                    startY: slider_1.visualPosition * graph_item.height
 
                     strokeWidth: 10
 
                     fillColor: "#470932"
 
                     PathCubic {
-                        relativeControl1X: 200
+                        relativeControl1X: Math.abs(slider_1.x-slider_2.x)/2
                         relativeControl1Y: 0
-                        relativeControl2X: 200
-                        relativeControl2Y: 400
-                        x: 420
-                        y: 420
+                        control2X: slider_1.x + Math.abs(slider_1.x-slider_2.x)/2
+                        control2Y: slider_2.visualPosition * graph_item.height
+                        x: slider_2.x
+                        y: slider_2.visualPosition * graph_item.height
                     }
                 }
             }
@@ -92,10 +95,11 @@ Window {
         }
 
         Item {
-
+            id: placeholder_item
         }
 
         Item {
+            id: yaxis_item
             Layout.fillWidth: true
             height: 20
 
